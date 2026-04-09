@@ -1,0 +1,414 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BOTIFY - Generative AI</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #0f4c1e 0%, #1a5f2a 50%, #0d3a1a 100%);
+            min-height: 100vh;
+            color: #e0e6ed;
+            overflow: hidden;
+        }
+
+        .container {
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* Header */
+        .header {
+            background: rgba(15, 76, 30, 0.9);
+            backdrop-filter: blur(20px);
+            padding: 20px 40px;
+            display: flex;
+            align-items: center;
+            gap: 20px;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+        }
+
+        .logo {
+            font-size: 28px;
+            font-weight: 800;
+            background: linear-gradient(135deg, #4ade80, #22c55e);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .features {
+            display: flex;
+            gap: 10px;
+            margin-left: auto;
+        }
+
+        .feature-btn {
+            background: rgba(255,255,255,0.1);
+            border: 1px solid rgba(255,255,255,0.2);
+            color: #e0e6ed;
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-size: 13px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            backdrop-filter: blur(10px);
+        }
+
+        .feature-btn:hover {
+            background: rgba(74, 222, 128, 0.2);
+            border-color: #4ade80;
+            transform: translateY(-1px);
+        }
+
+        /* Main Chat Area */
+        .chat-container {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            max-width: 1200px;
+            margin: 0 auto;
+            width: 100%;
+        }
+
+        .chat-messages {
+            flex: 1;
+            padding: 40px;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        .message {
+            max-width: 70%;
+            padding: 20px 24px;
+            border-radius: 20px;
+            position: relative;
+        }
+
+        .user-message {
+            align-self: flex-end;
+            background: linear-gradient(135deg, #4ade80, #22c55e);
+            color: white;
+            border-bottom-right-radius: 6px;
+        }
+
+        .bot-message {
+            align-self: flex-start;
+            background: rgba(255,255,255,0.1);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(255,255,255,0.2);
+            border-bottom-left-radius: 6px;
+        }
+
+        .bot-message::before {
+            content: '🤖';
+            position: absolute;
+            left: -10px;
+            top: 10px;
+            font-size: 18px;
+        }
+
+        /* Input Area */
+        .input-container {
+            padding: 0 40px 40px;
+            background: rgba(15, 76, 30, 0.5);
+            backdrop-filter: blur(20px);
+        }
+
+        .input-wrapper {
+            display: flex;
+            gap: 16px;
+            align-items: flex-end;
+            max-width: 900px;
+            margin: 0 auto;
+        }
+
+        .input-area {
+            flex: 1;
+            position: relative;
+        }
+
+        .textarea {
+            width: 100%;
+            min-height: 60px;
+            max-height: 200px;
+            padding: 20px 24px;
+            border: 2px solid rgba(255,255,255,0.2);
+            border-radius: 24px;
+            background: rgba(255,255,255,0.08);
+            backdrop-filter: blur(20px);
+            color: #e0e6ed;
+            font-size: 16px;
+            resize: none;
+            outline: none;
+            transition: all 0.3s ease;
+        }
+
+        .textarea:focus {
+            border-color: #4ade80;
+            box-shadow: 0 0 0 4px rgba(74, 222, 128, 0.1);
+            background: rgba(255,255,255,0.12);
+        }
+
+        .textarea::placeholder {
+            color: rgba(255,255,255,0.5);
+        }
+
+        .send-btn {
+            width: 56px;
+            height: 56px;
+            border: none;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #4ade80, #22c55e);
+            color: white;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 20px;
+            transition: all 0.3s ease;
+            flex-shrink: 0;
+        }
+
+        .send-btn:hover {
+            transform: scale(1.05);
+            box-shadow: 0 10px 25px rgba(74, 222, 128, 0.4);
+        }
+
+        .send-btn:active {
+            transform: scale(0.98);
+        }
+
+        /* Welcome Message */
+        .welcome {
+            text-align: center;
+            padding: 80px 40px;
+            color: rgba(255,255,255,0.7);
+        }
+
+       .welcome h2 {
+    font-size: 32px;
+    margin-bottom: 12px;
+    /* Gradient text */
+    background: linear-gradient(135deg, #4ade80, #22c55e);
+    background-clip: text;
+    -webkit-background-clip: text; /* For Chrome/Safari */
+    color: transparent; /* Fallback for non-supporting browsers */
+    -webkit-text-fill-color: transparent; /* For Chrome/Safari */
+}
+
+        .welcome-examples {
+            display: flex;
+            gap: 12px;
+            justify-content: center;
+            flex-wrap: wrap;
+            margin-top: 30px;
+        }
+
+        .example {
+            background: rgba(255,255,255,0.1);
+            padding: 10px 20px;
+            border-radius: 20px;
+            cursor: pointer;
+            font-size: 14px;
+            transition: all 0.3s ease;
+            border: 1px solid rgba(255,255,255,0.2);
+        }
+
+        .example:hover {
+            background: rgba(74, 222, 128, 0.2);
+            border-color: #4ade80;
+        }
+
+        /* Loading */
+        .loading {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 3px solid rgba(255,255,255,0.3);
+            border-radius: 50%;
+            border-top-color: #4ade80;
+            animation: spin 1s ease-in-out infinite;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        /* Scrollbar */
+        .chat-messages::-webkit-scrollbar {
+            width: 6px;
+        }
+
+        .chat-messages::-webkit-scrollbar-track {
+            background: rgba(255,255,255,0.1);
+        }
+
+        .chat-messages::-webkit-scrollbar-thumb {
+            background: rgba(74, 222, 128, 0.5);
+            border-radius: 3px;
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .header {
+                padding: 16px 24px;
+            }
+            
+            .logo {
+                font-size: 24px;
+            }
+            
+            .chat-messages {
+                padding: 24px 20px;
+            }
+            
+            .input-container {
+                padding: 0 20px 24px;
+            }
+            
+            .features {
+                display: none;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Header -->
+        <div class="header">
+            <div class="logo">BOTIFY</div>
+            <div class="features">
+                <div class="feature-btn">⭐ New</div>
+                <div class="feature-btn">⚙️ Settings</div>
+                <div class="feature-btn">📚 History</div>
+                <div class="feature-btn">⭐ Star</div>
+            </div>
+        </div>
+
+        <!-- Chat Container -->
+        <div class="chat-container">
+            <div class="chat-messages" id="chatMessages">
+                <div class="welcome">
+                    <h2>Welcome to BOTIFY</h2>
+                    <p>Generative AI that understands you. Ask anything.</p>
+                    <div class="welcome-examples">
+                        <div class="example" onclick="setExample('Explain quantum computing in simple terms')">Explain quantum computing</div>
+                        <div class="example" onclick="setExample('Write a Python script for a todo app')">Python todo app</div>
+                        <div class="example" onclick="setExample('Create a business plan for a coffee shop')">Coffee shop business plan</div>
+                        <div class="example" onclick="setExample('Generate a motivational quote')">Motivational quote</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="input-container">
+                <div class="input-wrapper">
+                    <div class="input-area">
+                        <textarea 
+                            class="textarea" 
+                            id="messageInput" 
+                            placeholder="Message BOTIFY..."
+                            rows="1"
+                        ></textarea>
+                    </div>
+                    <button class="send-btn" onclick="sendMessage()">➤</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+const chatMessages = document.getElementById('chatMessages');
+const messageInput = document.getElementById('messageInput');
+
+// Auto-resize textarea
+messageInput.addEventListener('input', function () {
+    this.style.height = 'auto';
+    this.style.height = Math.min(this.scrollHeight, 200) + 'px';
+});
+
+// Example buttons
+function addMessage(content, isUser = false) {
+    const messageDiv = document.createElement('div');
+    messageDiv.className = `message ${isUser ? 'user-message' : 'bot-message'}`;
+    messageDiv.innerHTML = content;
+    chatMessages.appendChild(messageDiv);
+
+    // Scroll only chat container, not entire page
+    chatMessages.scrollTop = chatMessages.scrollHeight;
+
+    // Keep focus in input so you can type next message
+    messageInput.focus();
+}
+// Send message
+function sendMessage() {
+    const message = messageInput.value.trim();
+    if (!message) return;
+
+    const lowerMessage = message.toLowerCase();
+
+    // Add user message
+    addMessage(message, true);
+
+    // Clear input
+    messageInput.value = '';
+    messageInput.style.height = '60px';
+
+    // Typing animation
+    const typingDiv = document.createElement('div');
+    typingDiv.className = 'message bot-message';
+    typingDiv.innerHTML = '<div class="loading"></div> BOTIFY is typing...';
+    chatMessages.appendChild(typingDiv);
+    chatMessages.scrollTop = chatMessages.scrollHeight;
+
+    // Bot response
+    setTimeout(() => {
+        chatMessages.removeChild(typingDiv);
+
+        let reply;
+        if (lowerMessage.includes("hello") || lowerMessage.includes("hi")) {
+            reply = `
+            <div style="font-weight:600;margin-bottom:8px;">🤖 BOTIFY</div>
+            Hello 👋 Welcome to BOTIFY.<br><br>
+            Our AI platform is currently under development.<br>
+            <b>Everything is coming soon.</b>
+            `;
+        } else {
+            reply = `
+            <div style="font-weight:600;margin-bottom:8px;">🤖 BOTIFY</div>
+            Thanks for your message.<br><br>
+            BOTIFY AI features are still being built.<br>
+            <b>Everything is coming soon.</b>
+            `;
+        }
+
+        addMessage(reply);
+
+    }, 1200);
+}
+
+// Enter key to send
+messageInput.addEventListener('keydown', function (e) {
+    if (e.key === 'Enter' && !e.shiftKey) {
+        e.preventDefault();
+        sendMessage();
+    }
+});
+
+// Focus input when page loads
+window.addEventListener('load', () => {
+   messageInput.focus();
+});
+</script>
+</body>
+</html>
